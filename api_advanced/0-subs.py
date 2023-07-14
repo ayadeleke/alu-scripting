@@ -1,7 +1,5 @@
 #!/usr/bin/python3
-"""
-How many subs
-"""
+"""0-subs.py"""
 
 import requests
 
