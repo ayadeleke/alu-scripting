@@ -1,4 +1,8 @@
+#!/usr/bin/python3
+"""2_Recurse.py"""
+
 import requests
+
 
 def recurse(subreddit, hot_list=None, after=None, count=0):
     """Recursive function for retrieving the hot list of a subreddit"""
