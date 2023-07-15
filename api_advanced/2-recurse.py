@@ -2,28 +2,29 @@
 """2-recurse.py"""
 import requests
 
-def get_hot_articles(subreddit):
-    url = "https://www.reddit.com/r/{}/hot.json".format(subreddit)
-    headers = {"User-Agent": "My-User-Agent"}
 
-    return query_reddit_api(url, headers)
+def recurse(subreddit, hot_list=None, after=None):
+    """Recursive function to retrieve all hot article titles for a subreddit"""
+    if hot_list is None:
+        hot_list = []
 
-def query_reddit_api(url, headers, hot_list=[], count=0, after=None):
-    params = {"count": count, "after": after}
-    response = requests.get(url, params=params, headers=headers, allow_redirects=False)
+    url = "https://www.reddit.com/r/{}/hot.json?limit=10".format(subreddit)
+    headers = {'User-Agent': 'My-User-Agent'}
+    params = {'after': after}
 
+    response = requests.get(url, headers=headers, params=params, allow_redirects=False)
     if response.status_code != 200:
         return None
 
-    data = response.json().get("data")
-    children = data.get("children")
+    data = response.json().get('data')
+    after = data.get('after')
+    posts = data.get('children')
 
-    hot_list += [child.get("data").get("title") for child in children]
+    for post in posts:
+        title = post.get('data').get('title')
+        hot_list.append(title)
 
-    if not data.get("after") and not hot_list:
-        return None
-
-    if not data.get("after"):
+    if after:
+        return recurse(subreddit, hot_list, after)
+    else:
         return hot_list
-
-    return query_reddit_api(url, headers, hot_list, data.get("count"), data.get("after"))
