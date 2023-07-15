@@ -2,27 +2,28 @@
 """2-recurse.py"""
 import requests
 
+def get_hot_articles(subreddit):
+    url = "https://www.reddit.com/r/{}/hot.json".format(subreddit)
+    headers = {"User-Agent": "My-User-Agent"}
 
-def recurse(subreddit, hot_list=[], count=0, after=None):
-    """Function to query recurse"""
-    sub_info = requests.get("https://www.reddit.com/r/{}/hot.json"
-                            .format(subreddit),
-                            params={"count": count, "after": after},
-                            headers={"User-Agent": "My-User-Agent"},
-                            allow_redirects=False)
-    if sub_info.status_code != 200:
+    return query_reddit_api(url, headers)
+
+def query_reddit_api(url, headers, hot_list=[], count=0, after=None):
+    params = {"count": count, "after": after}
+    response = requests.get(url, params=params, headers=headers, allow_redirects=False)
+
+    if response.status_code != 200:
         return None
 
-    hot_l = hot_list + [child.get("data").get("title")
-                        for child in sub_info.json()
-                        .get("data")
-                        .get("children")]
+    data = response.json().get("data")
+    children = data.get("children")
 
-    info = sub_info.json()
-    if not info.get("data").get("after"):
-        if not hot_l:  # Check if hot_list is empty
-            return None
-        return hot_l
+    hot_list += [child.get("data").get("title") for child in children]
 
-    return recurse(subreddit, hot_l, info.get("data").get("count"),
-                   info.get("data").get("after"))
+    if not data.get("after") and not hot_list:
+        return None
+
+    if not data.get("after"):
+        return hot_list
+
+    return query_reddit_api(url, headers, hot_list, data.get("count"), data.get("after"))
