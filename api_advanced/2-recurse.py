@@ -10,7 +10,7 @@ def recurse(subreddit, hot_list=[], count=0, after=None):
                             params={"count": count, "after": after},
                             headers={"User-Agent": "My-User-Agent"},
                             allow_redirects=False)
-    if sub_info.status_code == 404:
+    if sub_info.status_code >= 400:
         return None
 
     hot_l = hot_list + [child.get("data").get("title")
@@ -20,6 +20,8 @@ def recurse(subreddit, hot_list=[], count=0, after=None):
 
     info = sub_info.json()
     if not info.get("data").get("after"):
+        if not hot_l:  # Check if hot_list is empty
+            return None
         return hot_l
 
     return recurse(subreddit, hot_l, info.get("data").get("count"),
