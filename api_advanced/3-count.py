@@ -1,56 +1,44 @@
 #!/usr/bin/python3
-"""Quirry for the reddit api and parse the title of all hot articles
+"""recursive function that queries the Reddit API
 """
-
 import json
 import requests
 
 
-def count_words(subreddit, word_list, after="", count=[]):
-    """Function to count words
-    """
-
-    if after == "":
+def count_words(subreddit, word_list, after="", count=None):
+    """Function to count words"""
+    if count is None:
         count = [0] * len(word_list)
 
     url = "https://www.reddit.com/r/{}/hot.json".format(subreddit)
-    request = requests.get(url,
-                           params={'after': after},
-                           allow_redirects=False,
-                           headers={'user-agent': 'bhalut'})
+    headers = {"User-Agent": "My-User-Agent"}
+    params = {"after": after}
 
-    if request.status_code == 200:
-        data = request.json()
+    response = requests.get(url, headers=headers, params=params, allow_redirects=False)
+    if response.status_code != 200:
+        return
 
-        for topic in (data['data']['children']):
-            for word in topic['data']['title'].split():
-                for i in range(len(word_list)):
-                    if word_list[i].lower() == word.lower():
-                        count[i] += 1
+    data = response.json().get("data")
+    after = data.get("after")
+    posts = data.get("children")
 
-        after = data['data']['after']
-        if after is None:
-            save = []
-            for i in range(len(word_list)):
-                for j in range(i + 1, len(word_list)):
-                    if word_list[i].lower() == word_list[j].lower():
-                        save.append(j)
-                        count[i] += count[j]
+    for post in posts:
+        title = post.get("data").get("title")
+        words = title.split()
 
-            for i in range(len(word_list)):
-                for j in range(i, len(word_list)):
-                    if (count[j] > count[i] or
-                            (word_list[i] > word_list[j] and
-                             count[j] == count[i])):
-                        aux = count[i]
-                        count[i] = count[j]
-                        count[j] = aux
-                        aux = word_list[i]
-                        word_list[i] = word_list[j]
-                        word_list[j] = aux
+        for word in word_list:
+            for w in words:
+                if w.lower() == word.lower():
+                    count[word_list.index(word)] += 1
 
-            for i in range(len(word_list)):
-                if (count[i] > 0) and i not in save:
-                    print("{}: {}".format(word_list[i].lower(), count[i]))
-        else:
-                count_words(subreddit, word_list, after, count)
+    if after:
+        count_words(subreddit, word_list, after, count)
+    else:
+        sorted_counts = sorted(zip(word_list, count), key=lambda x: (-x[1], x[0].lower()))
+        for word, count in sorted_counts:
+            print("{}: {}".format(word.lower(), count))
+
+# Example usage:
+subreddit = "programming"
+word_list = ["Python", "Java", "JavaScript"]
+count_words(subreddit, word_list)
