@@ -10,7 +10,7 @@ import requests
 def count_words(subreddit, word_list, after='', word_dict={}):
     """ If no post or the subreddit is invalid, it prints nothing.
     """
-
+	
     if not word_dict:
         for word in word_list:
             if word.lower() not in word_dict:
@@ -27,7 +27,7 @@ def count_words(subreddit, word_list, after='', word_dict={}):
     header = {'user-agent': 'my-user-agent'}
     params = {'limit': 100, 'after': after}
     response = requests.get(url, headers=header, params=params,
-                            allow_redirects=False)
+                            allow_redirects=False
 
     if response.status_code != 200:
         return None
@@ -40,7 +40,7 @@ def count_words(subreddit, word_list, after='', word_dict={}):
             lower = [word.lower() for word in title.split(' ')]
 
             for word in word_dict.keys():
-                word_dict[word] += lower.count(word)
+                word_dict[word] += lower.count(word.lower())
 
     except Exception:
         return None
