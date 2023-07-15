@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-"""2-recurse.py"""
 import requests
 
 
@@ -35,6 +33,11 @@ def count_words(subreddit, word_list, counts=None, after=None):
         for word, count in sorted_counts:
             print("{}: {}".format(word, count))
 
+    # Base case: Return counts
+    return counts
+
+
 def recurse(subreddit, word_list):
     """Wrapper function for the recursive count_words function"""
-    count_words(subreddit, word_list)
+    # Call count_words and discard the returned counts
+    _ = count_words(subreddit, word_list)
