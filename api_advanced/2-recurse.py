@@ -1,46 +1,27 @@
 #!/usr/bin/python3
-"""2-recorse.p"""
+"""2-recurse.py"""
 import requests
 
 
+def recurse(subreddit, hot_list=[], count=0, after=None):
+    """Function to query recurse""" 
 
-def count_words(subreddit, word_list, counts=None, after=None):
-    """Recursive function for counting keywords in hot article titles"""
-    if counts is None:
-        counts = {}
-
-    url = "https://www.reddit.com/r/{}/hot.json?limit=10".format(subreddit)
-    headers = {'User-Agent': 'My-User-Agent'}
-    params = {"count": 0, "after": after}
-
-    response = requests.get(url, headers=headers, params=params, allow_redirects=False)
-    if response.status_code != 200:
+    sub_info = requests.get("https://www.reddit.com/r/{}/hot.json"
+                            .format(subreddit),
+                            params={"count": count, "after": after},
+                            headers={"User-Agent": "My-User-Agent"},
+                            allow_redirects=False)
+    if sub_info.status_code >= 400:
         return None
 
-    data = response.json().get("data")
-    after = data.get("after")
-    posts = data.get("children")
+    hot_l = hot_list + [child.get("data").get("title")
+                        for child in sub_info.json()
+                        .get("data")
+                        .get("children")]
 
-    for post in posts:
-        title = post.get("data").get("title").lower()
-        words = title.split()
+    info = sub_info.json()
+    if not info.get("data").get("after"):
+        return hot_l
 
-        for word in word_list:
-            if word.lower() in words:
-                counts[word.lower()] = counts.get(word.lower(), 0) + 1
-
-    if after:
-        return count_words(subreddit, word_list, counts, after)
-    else:
-        sorted_counts = sorted(counts.items(), key=lambda x: (-x[1], x[0]))
-        for word, count in sorted_counts:
-            print("{}: {}".format(word, count))
-
-    # Base case: Return counts
-    return counts
-
-
-def recurse(subreddit, word_list):
-    """Wrapper function for the recursive count_words function"""
-    # Call count_words and discard the returned counts
-    _ = count_words(subreddit, word_list)
+    return recurse(subreddit, hot_l, info.get("data").get("count"),
+                   info.get("data").get("after"))
