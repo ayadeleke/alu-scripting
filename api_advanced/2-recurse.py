@@ -5,14 +5,13 @@ import requests
 
 def recurse(subreddit, hot_list=[], count=0, after=None):
     """Function to query recurse""" 
-
     sub_info = requests.get("https://www.reddit.com/r/{}/hot.json"
                             .format(subreddit),
                             params={"count": count, "after": after},
                             headers={"User-Agent": "My-User-Agent"},
                             allow_redirects=False)
-    if sub_info.status_code >= 400:
-        return []
+    if sub_info.status_code == 404:
+        return None
 
     hot_l = hot_list + [child.get("data").get("title")
                         for child in sub_info.json()
