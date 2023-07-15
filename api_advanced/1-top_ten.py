@@ -3,6 +3,7 @@
 
 import requests
 
+
 def top_ten(subreddit):
     """Top ten subreddit"""
     url = "https://www.reddit.com/r/{}/hot.json?limit=10".format(subreddit)
