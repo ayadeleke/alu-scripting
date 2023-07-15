@@ -17,7 +17,7 @@ def count_words(subreddit, word_list, after="", count=[]):
     request = requests.get(url,
                            params={'after': after},
                            allow_redirects=False,
-                           headers={'user-agent': 'bhalut'})
+                           headers={'user-agent': 'my-user-agent'})
 
     if request.status_code == 200:
         data = request.json()
@@ -25,7 +25,7 @@ def count_words(subreddit, word_list, after="", count=[]):
         for topic in (data['data']['children']):
             for word in topic['data']['title'].split():
                 for i in range(len(word_list)):
-                    if word_list[i].lower() == word.lower():
+                    if word_liist[i].lower() == word.lower():
                         count[i] += 1
 
         after = data['data']['after']
