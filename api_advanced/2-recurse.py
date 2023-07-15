@@ -10,7 +10,7 @@ def recurse(subreddit, hot_list=[], count=0, after=None):
                             params={"count": count, "after": after},
                             headers={"User-Agent": "My-User-Agent"},
                             allow_redirects=False)
-    if sub_info.status_code >= 400:
+    if sub_info.status_code != 200:
         return None
 
     hot_l = hot_list + [child.get("data").get("title")
