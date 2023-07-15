@@ -4,9 +4,8 @@
 import json
 import requests
 
-
 def count_words(subreddit, word_list, after="", count=None):
-    """Function to count words"""
+    """Recursive function to count words"""
     if count is None:
         count = [0] * len(word_list)
 
@@ -16,7 +15,7 @@ def count_words(subreddit, word_list, after="", count=None):
 
     response = requests.get(url, headers=headers, params=params, allow_redirects=False)
     if response.status_code != 200:
-        return
+        return None
 
     data = response.json().get("data")
     after = data.get("after")
@@ -32,13 +31,16 @@ def count_words(subreddit, word_list, after="", count=None):
                     count[word_list.index(word)] += 1
 
     if after:
-        count_words(subreddit, word_list, after, count)
+        return count_words(subreddit, word_list, after, count)
     else:
         sorted_counts = sorted(zip(word_list, count), key=lambda x: (-x[1], x[0].lower()))
         for word, count in sorted_counts:
             print("{}: {}".format(word.lower(), count))
 
-# Example usage:
-subreddit = "programming"
-word_list = ["Python", "Java", "JavaScript"]
-count_words(subreddit, word_list)
+    # Base case: Return counts
+    return count
+
+def recurse(subreddit, word_list):
+    """Wrapper function for the recursive count_words function"""
+    # Call count_words and discard the returned counts
+    _ = count_words(subreddit, word_list)
